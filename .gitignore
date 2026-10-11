@@ -1,0 +1,11 @@
+build/
+bin/
+obj/
+*.o
+*.exe
+*.elf
+*.map
+*.log
+.vscode/settings.json
+mx.scratch
+!.settings
