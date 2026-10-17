@@ -147,7 +147,7 @@ void HandleCLI(CmdArgs *c_args)
 				switch(arg)
 				{
 					case ARG_K:
-						set_k(f_p0);
+						set_k(q24_from_float(f_p0));
 						break;
 
 					default:
@@ -169,11 +169,11 @@ void HandleCLI(CmdArgs *c_args)
 				switch(arg)
 				{
 					case ARG_SIN:
-						set_stim(SIN, f_p0);
+						set_stim(SIN, q24_from_float(f_p0));
 						break;
 
 					case ARG_SQR:
-						set_stim(SQR, f_p0);
+						set_stim(SQR, q24_from_float(f_p0));
 						break;
 
 					default:

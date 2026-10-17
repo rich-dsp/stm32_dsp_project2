@@ -31,7 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include  "q24.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -72,18 +72,21 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 
-uint32_t Stim_Init_sin(float f_norm, uint32_t n_cycles);
-uint32_t Stim_Init_sqr(float f_norm, uint32_t n_cycles);
+uint32_t Stim_Init_sin(q24_t f_norm, uint32_t n_cycles);
+uint32_t Stim_Init_sqr(q24_t f_norm, uint32_t n_cycles);
 
-float get_filter_value(float x_in, float y_prev);
+q24_t get_filter_value(q24_t x_in, q24_t y_prev);
+q24_t get_impulse_invariant_filter_value(q24_t x_in, q24_t y_prev);
+q24_t get_biquad_filter_value(q24_t x_in);    
+void init_biquad_filter(q24_t k_new);
 void handle_dac2(uint32_t stim_index);
 void handle_dacs(void);
 void handle_dac1(uint32_t stim_index);
 uint32_t f_to_dac_value(float f);
 
 
-void set_k(float k);
-void set_stim(uint8_t stim_type, float f_norm_new);
+void set_k(q24_t k);
+void set_stim(uint8_t stim_type, q24_t f_norm_new);
 
 
 #define FALSE 0
@@ -95,17 +98,35 @@ void set_stim(uint8_t stim_type, float f_norm_new);
 #define SQR 1
 
 typedef struct {
-  float * ptr_stim;
+  q24_t * ptr_stim;
   uint32_t stim_length;
   uint32_t stim_index;
-  uint32_t * ptr_filt_in;
-  uint32_t * ptr_filt_out;
   uint8_t stim_type;
-  float f_norm;
-  float k;
-  float alpha;
-  float filt_y_prev;
+  q24_t f_norm;
+} stim_t;
+
+typedef struct {
+  q24_t k;
+  q24_t alpha;
+  q24_t y_prev;
 } ii_filter_t;
+
+
+typedef struct {
+  q24_t k;
+  q24_t b0;
+  q24_t b1;
+  q24_t b2;
+  q24_t a1;
+  q24_t a2;
+  q24_t x1;
+  q24_t x2;
+  q24_t y1;
+  q24_t y2;
+} biquad_filter_t;
+
+
+
 
 /* USER CODE END Private defines */
 
