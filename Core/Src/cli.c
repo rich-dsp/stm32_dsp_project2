@@ -52,6 +52,8 @@ enum UartCmd_1   {
     UART_CMD_BUILD_DATE_AND_TIME,       \
 	UART_CMD_SET,						\
 	UART_CMD_STIM,						\
+	UART_CMD_CONFIG,					\
+	UART_CMD_FILT,						\
 	COMMAND_INVALID						\
 };
 
@@ -63,6 +65,8 @@ CmdData const G_CommandTable[] = {
 	{UART_CMD_BUILD_DATE_AND_TIME, 	"build", 			"build      - print build date and time"},
 	{UART_CMD_SET, 					"set",				"set        - set parameter [k,f]"},
 	{UART_CMD_STIM, 				"stim",				"stim       - stimulus [sin,sqr]"},
+	{UART_CMD_CONFIG,				"config",			"config     - print configuration"},
+	{UART_CMD_FILT,					"filt",				"filt       - print filter parameters"},
 	{COMMAND_INVALID,				"null",				"null       - null command"}
 };
 
@@ -181,8 +185,14 @@ void HandleCLI(CmdArgs *c_args)
 						break;
 				}
 				break;
+			
+			case UART_CMD_CONFIG:
+				print_config();
+				break;
 
-
+			case UART_CMD_FILT:
+				print_filter_params();
+				break;
 
 			case COMMAND_INVALID:
 

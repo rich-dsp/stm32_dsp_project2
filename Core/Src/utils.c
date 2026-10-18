@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "q24.h"
 #include "main.h"
@@ -31,6 +32,37 @@ void print_prompt(void)
 	printf(PROMPT);
 }
 
+char *q24_to_str(int32_t q24)
+{
+    uint32_t abs_q24;
+    char sign = '\0';
+	static char buf[Q24_STR_SIZE];
+
+
+    if (q24 < 0) {
+        sign = '-';
+        abs_q24 = (uint32_t)(-q24);
+    } else {
+        abs_q24 = (uint32_t)q24;
+    }
+
+    uint32_t integer = abs_q24 >> 24;
+    uint32_t fraction = abs_q24 & 0xFFFFFF;
+
+    // 6 decimal places, rounded
+    uint32_t frac_dec =
+        (((uint64_t)fraction * 1000000) + (1 << 23)) >> 24;
+
+    if (sign)
+        snprintf(buf, Q24_STR_SIZE, "%c%u.%06u", sign, integer, frac_dec);
+    else
+        snprintf(buf, Q24_STR_SIZE, "%u.%06u", integer, frac_dec);
+
+    return buf;
+}
+
+
+
 void clear_debug_UART_Rx_buff(void)
 {
 	uint8_t i;
@@ -47,7 +79,7 @@ void PrintBanner(void)
 {
 
 	printf("\n\r#####################################################################\n\n\r");
-	printf("KP NG bring-up utility\n\n\r");
+	printf("STM32 DSP Learning Project\n\n\r");
 	printf("Compiled on ");
 	printf(__DATE__);
 	printf(" at ");

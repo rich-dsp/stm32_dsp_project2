@@ -2,7 +2,7 @@
 
 #define DEBUG_UART_RX_BUFF_SIZE 40
 
-#define FW_REV   "PM_1.0"	// Firmware Revision
+#define FW_REV   "1.0"	// Firmware Revision
 
 
 #define PROMPT "\n\rCmd > "
@@ -22,7 +22,7 @@
 
 #define MAX_ARG_SIZE           8
 
-
+#define Q24_STR_SIZE 16
 
 
 typedef struct {
@@ -56,6 +56,7 @@ void PrintMenu(void);
 void print_prompt(void);
 void clear_debug_UART_Rx_buff(void);
 void PrintBanner(void);
+char *q24_to_str(int32_t q24);
 
 CmdArgs Handle_UART_Rx(void);
 unsigned char ArgtoParam(char *arg, ArgData const * ArgTbl);

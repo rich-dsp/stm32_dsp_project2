@@ -75,19 +75,20 @@ void Error_Handler(void);
 uint32_t Stim_Init_sin(q24_t f_norm, uint32_t n_cycles);
 uint32_t Stim_Init_sqr(q24_t f_norm, uint32_t n_cycles);
 
-q24_t get_filter_value(q24_t x_in, q24_t y_prev);
-q24_t get_impulse_invariant_filter_value(q24_t x_in, q24_t y_prev);
+//q24_t get_filter_value(q24_t x_in, q24_t y_prev);
+//q24_t get_impulse_invariant_filter_value(q24_t x_in, q24_t y_prev);
 q24_t get_biquad_filter_value(q24_t x_in);    
 void init_biquad_filter(q24_t k_new);
 void handle_dac2(uint32_t stim_index);
 void handle_dacs(void);
 void handle_dac1(uint32_t stim_index);
-uint32_t f_to_dac_value(float f);
+//uint32_t f_to_dac_value(float f);
 
 
 void set_k(q24_t k);
 void set_stim(uint8_t stim_type, q24_t f_norm_new);
-
+void print_config(void);
+void print_filter_params(void);
 
 #define FALSE 0
 #define TRUE 1
@@ -104,12 +105,6 @@ typedef struct {
   uint8_t stim_type;
   q24_t f_norm;
 } stim_t;
-
-typedef struct {
-  q24_t k;
-  q24_t alpha;
-  q24_t y_prev;
-} ii_filter_t;
 
 
 typedef struct {
