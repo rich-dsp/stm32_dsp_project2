@@ -76,13 +76,58 @@ q24_t Stim[MAX_STIM_LENGTH] = {Q24_ZERO};
 
 stim_t G_StimDb;
 biquad_filter_t G_BiquadDb;
+filter_stats_t G_FilterStats;
 
 uint32_t Filt_in = 0;
 uint32_t Filt_out = 0;
 
 char qbuf[16];
 
+extern CmdArgs CmdStruct;
 
+
+void get_stim_stats(void)
+{
+  G_FilterStats.max_stim_value = Q24_ZERO;
+  G_FilterStats.min_stim_value = Q24_ONE;
+  G_FilterStats.stim_amplitude = Q24_ZERO;
+
+  for (uint32_t i = 0; i < G_StimDb.stim_length; i++)
+  {
+    if (Stim[i] > G_FilterStats.max_stim_value)
+    {
+      G_FilterStats.max_stim_value = Stim[i];
+    }
+    if (Stim[i] < G_FilterStats.min_stim_value)
+    {
+      G_FilterStats.min_stim_value = Stim[i];
+    }
+  }
+
+  G_FilterStats.stim_amplitude = q24_sub(G_FilterStats.max_stim_value, G_FilterStats.min_stim_value);
+}
+
+
+void init_filter_stats(void)
+{
+  G_FilterStats.max_filter_value = Q24_ZERO;
+  G_FilterStats.min_filter_value = Q24_ONE;
+  G_FilterStats.filter_amplitude = Q24_ZERO;
+  G_FilterStats.filter_gain = Q24_ONE; // Default gain is 1
+}
+
+void update_filter_min_max(q24_t filter_value)
+{
+  if (filter_value > G_FilterStats.max_filter_value)
+  {
+    G_FilterStats.max_filter_value = filter_value;
+  }
+  if (filter_value < G_FilterStats.min_filter_value)
+  {
+    G_FilterStats.min_filter_value = filter_value;
+  }
+
+}
 
 void set_stim(uint8_t stim_type, q24_t f_norm_new)
 {
@@ -101,10 +146,12 @@ void set_stim(uint8_t stim_type, q24_t f_norm_new)
   if (G_StimDb.stim_type == SIN)
   {
     G_StimDb.stim_length = Stim_Init_sin(G_StimDb.f_norm, 1); // Reinitialize the stimulus with the new frequency
+    get_stim_stats(); // Update the stimulus statistics after reinitialization
   }
   else if (stim_type == SQR)
   {
     G_StimDb.stim_length = Stim_Init_sqr(G_StimDb.f_norm, 1); // Reinitialize the stimulus with the new frequency
+    get_stim_stats(); // Update the stimulus statistics after reinitialization
   }
   else
   {
@@ -150,7 +197,7 @@ uint32_t Stim_Init_sqr(q24_t f_norm, uint32_t n_cycles)
   const float two_pi = 6.28318530718f;
   uint32_t stim_length;
   uint32_t index = 0;
-  float phase = 0.0f;
+  //float phase = 0.0f;
   uint32_t period = (uint32_t)(1.0f / q24_to_float(f_norm));
 
   stim_length = (uint32_t)(n_cycles * (1.0f / q24_to_float(f_norm)));
@@ -193,14 +240,14 @@ void handle_dacs(void)
   
   HAL_GPIO_WritePin(DEBUG_0_GPIO_Port, DEBUG_0_Pin, GPIO_PIN_SET);
   
-  handle_dac1(G_StimDb.stim_index);
-  handle_dac2(G_StimDb.stim_index);
+  handle_stim(G_StimDb.stim_index);
+  handle_filter(G_StimDb.stim_index);
   G_StimDb.stim_index = (G_StimDb.stim_index + 1) % G_StimDb.stim_length; // Increment stim_index and wrap around if necessary
   HAL_GPIO_WritePin(DEBUG_0_GPIO_Port, DEBUG_0_Pin, GPIO_PIN_RESET);
 
 }
 
-void handle_dac2(uint32_t stim_index)
+void handle_filter(uint32_t stim_index)
 {
   // Implementation for handling DAC2
 
@@ -208,10 +255,12 @@ void handle_dac2(uint32_t stim_index)
 
   Filt_out = q24_to_dac12(biquad_y);
 
+  update_filter_min_max(biquad_y);
+
 }
 
 
-void handle_dac1(uint32_t stim_index)
+void handle_stim(uint32_t stim_index)
 {
   Filt_in = q24_to_dac12(Stim[stim_index]);
 }
@@ -220,11 +269,12 @@ void handle_dac1(uint32_t stim_index)
 void set_k(q24_t k_new)
 {
   init_biquad_filter(k_new); // Reinitialize the biquad filter with the new k value
+
 }
 
 
 
-void Initialize_Filter(void)
+void init_project(void)
 {
   G_StimDb.ptr_stim = Stim;
   G_StimDb.stim_length = 0;
@@ -251,6 +301,7 @@ void init_biquad_filter(q24_t k)
   G_BiquadDb.y1 = Q24_ZERO;
   G_BiquadDb.y2 = Q24_ZERO;
   printf("\n\rBiquad filter initialized with k = %s", q24_to_str(k));
+
 }
 
 void print_config(void)
@@ -259,7 +310,6 @@ void print_config(void)
 				printf("\n\rStimulus Type: %s", (G_StimDb.stim_type == SIN) ? "SIN" : "SQR");
 				printf("\n\rNormalized Frequency: %s", q24_to_str(G_StimDb.f_norm));
 				printf("\n\rBiquad Filter Coefficient k: %s", q24_to_str(G_BiquadDb.k));
-
 }
 
 void print_filter_params(void)
@@ -273,12 +323,26 @@ void print_filter_params(void)
         printf("\n\ra2: %s", q24_to_str(G_BiquadDb.a2));
 }
 
-extern CmdArgs CmdStruct;
+void print_stim_stats(void)
+{
+  printf("\n\rStimulus Statistics:");
+  printf("\n\rMax Stimulus Value: %s", q24_to_str(G_FilterStats.max_stim_value));
+  printf("\n\rMin Stimulus Value: %s", q24_to_str(G_FilterStats.min_stim_value));
+  printf("\n\rStimulus Amplitude: %s", q24_to_str(G_FilterStats.stim_amplitude));
+}
 
-uint32_t TickZero;
-uint32_t TickRun;
-uint8_t Count = 0;
-
+void print_filter_stats(void)
+{
+  init_filter_stats(); // Ensure filter statistics are initialized before printing
+  HAL_Delay(120); // Small delay to allow filter to run over all stimult max = MAX_STIM_LENGTH * 100us per sample = 102.4ms
+  printf("\n\rFilter Statistics:");
+  printf("\n\rMax Filter Value: %s", q24_to_str(G_FilterStats.max_filter_value));
+  printf("\n\rMin Filter Value: %s", q24_to_str(G_FilterStats.min_filter_value));
+  G_FilterStats.filter_amplitude = q24_sub(G_FilterStats.max_filter_value, G_FilterStats.min_filter_value);
+  G_FilterStats.filter_gain = q24_div(G_FilterStats.filter_amplitude, G_FilterStats.stim_amplitude);
+  printf("\n\rFilter Amplitude: %s", q24_to_str(G_FilterStats.filter_amplitude));
+  printf("\n\rFilter Gain: %s", q24_to_str(G_FilterStats.filter_gain));
+}
 
 /* USER CODE END 0 */
 
@@ -317,9 +381,16 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	//HAL_TIM_Base_Start(&htim2);
 
+  uint32_t TickZero;
+  uint32_t TickRun;
+  uint8_t Count = 0;
+
+
+
+
   PrintBanner();
 
-  Initialize_Filter();
+  init_project();
 
   print_config();
   PrintMenu();

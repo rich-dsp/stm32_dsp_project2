@@ -71,6 +71,9 @@ void Error_Handler(void);
 #define DEBUG_0_GPIO_Port GPIOC
 
 /* USER CODE BEGIN Private defines */
+void init_project(void);
+
+
 
 uint32_t Stim_Init_sin(q24_t f_norm, uint32_t n_cycles);
 uint32_t Stim_Init_sqr(q24_t f_norm, uint32_t n_cycles);
@@ -79,10 +82,15 @@ uint32_t Stim_Init_sqr(q24_t f_norm, uint32_t n_cycles);
 //q24_t get_impulse_invariant_filter_value(q24_t x_in, q24_t y_prev);
 q24_t get_biquad_filter_value(q24_t x_in);    
 void init_biquad_filter(q24_t k_new);
-void handle_dac2(uint32_t stim_index);
+void handle_filter(uint32_t stim_index);
 void handle_dacs(void);
-void handle_dac1(uint32_t stim_index);
+void handle_stim(uint32_t stim_index);
 //uint32_t f_to_dac_value(float f);
+void update_filter_min_max(q24_t filter_value);
+void init_filter_stats(void);
+void print_stim_stats(void);
+void print_filter_stats(void);
+
 
 
 void set_k(q24_t k);
@@ -120,6 +128,15 @@ typedef struct {
   q24_t y2;
 } biquad_filter_t;
 
+typedef struct {
+  q24_t max_filter_value;
+  q24_t min_filter_value;
+  q24_t filter_amplitude;
+  q24_t max_stim_value;
+  q24_t min_stim_value;
+  q24_t stim_amplitude;
+  q24_t filter_gain;
+} filter_stats_t;
 
 
 

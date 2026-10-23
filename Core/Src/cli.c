@@ -54,6 +54,7 @@ enum UartCmd_1   {
 	UART_CMD_STIM,						\
 	UART_CMD_CONFIG,					\
 	UART_CMD_FILT,						\
+	UART_CMD_STATS,						\
 	COMMAND_INVALID						\
 };
 
@@ -67,6 +68,7 @@ CmdData const G_CommandTable[] = {
 	{UART_CMD_STIM, 				"stim",				"stim       - stimulus [sin,sqr]"},
 	{UART_CMD_CONFIG,				"config",			"config     - print configuration"},
 	{UART_CMD_FILT,					"filt",				"filt       - print filter parameters"},
+	{UART_CMD_STATS,				"stats",			"stats      - print statistics"},
 	{COMMAND_INVALID,				"null",				"null       - null command"}
 };
 
@@ -192,6 +194,11 @@ void HandleCLI(CmdArgs *c_args)
 
 			case UART_CMD_FILT:
 				print_filter_params();
+				break;
+
+			case UART_CMD_STATS:
+				print_stim_stats();
+				print_filter_stats();
 				break;
 
 			case COMMAND_INVALID:
