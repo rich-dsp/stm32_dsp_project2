@@ -98,6 +98,9 @@ void set_stim(uint8_t stim_type, q24_t f_norm_new);
 void print_config(void);
 void print_filter_params(void);
 
+
+
+
 #define FALSE 0
 #define TRUE 1
 
@@ -137,6 +140,8 @@ typedef struct {
   q24_t stim_amplitude;
   q24_t filter_gain;
 } filter_stats_t;
+
+void set_filter_template(biquad_filter_t *template);
 
 
 

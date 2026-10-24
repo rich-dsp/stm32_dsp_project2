@@ -76,6 +76,9 @@ q24_t Stim[MAX_STIM_LENGTH] = {Q24_ZERO};
 
 stim_t G_StimDb;
 biquad_filter_t G_BiquadDb;
+
+biquad_filter_t template_Biquad = {Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO, Q24_ZERO};
+
 filter_stats_t G_FilterStats;
 
 uint32_t Filt_in = 0;
@@ -128,6 +131,16 @@ void update_filter_min_max(q24_t filter_value)
   }
 
 }
+
+void set_filter_template(biquad_filter_t *template)
+{
+  G_BiquadDb.b0 = template->b0;
+  G_BiquadDb.b1 = template->b1;
+  G_BiquadDb.b2 = template->b2;
+  G_BiquadDb.a1 = template->a1;
+  G_BiquadDb.a2 = template->a2;
+}
+
 
 void set_stim(uint8_t stim_type, q24_t f_norm_new)
 {

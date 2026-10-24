@@ -22,6 +22,11 @@ enum Arg_1   {
 	ARG_VOLTAGE,					\
 	ARG_F_NORM,						\
 	ARG_K,							\
+	ARG_B0,							\
+	ARG_B1,							\
+	ARG_B2,							\
+	ARG_A1,							\
+	ARG_A2,							\
 	ARG_SIN,						\
 	ARG_SQR,						\
 	ARG_DEFAULT
@@ -34,6 +39,11 @@ ArgData const G_ArgTable[] = {
 	{"v",		ARG_VOLTAGE},
 	{"f",       ARG_F_NORM},
 	{"k",       ARG_K},
+	{"b0",      ARG_B0},
+	{"b1",      ARG_B1},
+	{"b2",      ARG_B2},
+	{"a1",      ARG_A1},
+	{"a2",      ARG_A2},
 	{"sin",     ARG_SIN},
 	{"sqr",     ARG_SQR},
 	{"null",	ARG_DEFAULT}
@@ -51,6 +61,7 @@ enum UartCmd_1   {
 	UART_CMD_SWVER, 					\
     UART_CMD_BUILD_DATE_AND_TIME,       \
 	UART_CMD_SET,						\
+	UART_CMD_APPLY_FILT_TEMPLATE,		\
 	UART_CMD_STIM,						\
 	UART_CMD_CONFIG,					\
 	UART_CMD_FILT,						\
@@ -64,7 +75,8 @@ CmdData const G_CommandTable[] = {
 	{UART_GUI_CONNECT,				"connect",			"connect    - gui connect (not implemented) (1 - connect, 0 - disconnect)"},
 	{UART_CMD_SWVER, 				"ver",				"ver        - print sw version"},
 	{UART_CMD_BUILD_DATE_AND_TIME, 	"build", 			"build      - print build date and time"},
-	{UART_CMD_SET, 					"set",				"set        - set parameter [k,f]"},
+	{UART_CMD_SET, 					"set",				"set        - set parameter [k, b0, b1, b2, a1, a2]"},
+	{UART_CMD_APPLY_FILT_TEMPLATE, 	"apply",			"apply      - apply filter template [b0, b1, b2, a1, a2]"},
 	{UART_CMD_STIM, 				"stim",				"stim       - stimulus [sin,sqr]"},
 	{UART_CMD_CONFIG,				"config",			"config     - print configuration"},
 	{UART_CMD_FILT,					"filt",				"filt       - print filter parameters"},
@@ -103,7 +115,7 @@ void HandleCLI(CmdArgs *c_args)
 
 	uint8_t Command = COMMAND_INVALID;
 	CmdData const * CmbTbl = G_CommandTable;
-
+	extern biquad_filter_t template_Biquad;
 
 
 	if (c_args->ArgCount > 0)
@@ -155,11 +167,31 @@ void HandleCLI(CmdArgs *c_args)
 					case ARG_K:
 						set_k(q24_from_float(f_p0));
 						break;
+					
+					case ARG_B0:
+						template_Biquad.b0 = q24_from_float(f_p0);
+						break;
+					case ARG_B1:
+						template_Biquad.b1 = q24_from_float(f_p0);
+						break;
+					case ARG_B2:
+						template_Biquad.b2 = q24_from_float(f_p0);
+						break;
+					case ARG_A1:
+						template_Biquad.a1 = q24_from_float(f_p0);
+						break;
+					case ARG_A2:
+						template_Biquad.a2 = q24_from_float(f_p0);
+						break;
 
 					default:
 						printf("\n\rUnrecognised argument '%s'", &c_args->Args[1][0]);
 						break;
 				}
+				break;
+
+			case UART_CMD_APPLY_FILT_TEMPLATE:
+				set_filter_template(&template_Biquad);
 				break;
 
 			case UART_CMD_STIM:
